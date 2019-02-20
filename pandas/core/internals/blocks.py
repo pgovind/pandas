@@ -76,6 +76,8 @@ class Block(PandasObject):
     _concatenator = staticmethod(np.concatenate)
 
     def __init__(self, values, placement, ndim=None):
+        print('Constructing a block with values, placement and ndim. Who is calling this?')
+        print(values, placement, ndim)
         self.ndim = self._check_ndim(values, ndim)
         self.mgr_locs = placement
         self.values = values

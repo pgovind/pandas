@@ -127,6 +127,8 @@ class NDFrame(PandasObject, SelectionMixin):
     def __init__(self, data, axes=None, copy=False, dtype=None,
                  fastpath=False):
 
+        print('Constructing an NDFrame with data, axes, dtype')
+        print(data, axes, dtype)
         if not fastpath:
             if dtype is not None:
                 data = data.astype(dtype)

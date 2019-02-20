@@ -46,12 +46,15 @@ def arrays_to_mgr(arrays, arr_names, index, columns, dtype=None):
 
     Needs to handle a lot of exceptional cases.
     """
+    print('Calling arrays_to_mgr with arrays, arr_names, index, columns, dtype')
+    print(arrays, arr_names, index, columns, dtype)
     # figure out the index, if necessary
     if index is None:
         index = extract_index(arrays)
     else:
         index = ensure_index(index)
-
+    print('Index')
+    print(index)
     # don't force copy because getting jammed in an ndarray anyway
     arrays = _homogenize(arrays, index, dtype)
 
@@ -143,8 +146,16 @@ def init_ndarray(values, index, columns, dtype=None, copy=False):
 
     # by definition an array here
     # the dtypes will be coerced to a single dtype
+    print('init_ndarray array')
+    print('Values')
+    print(values)
     values = prep_ndarray(values, copy=copy)
-
+    print('After')
+    print(values)
+    print('dtype =  Does it exist?')
+    print(dtype)
+    print('Before: index =' + str(index) + 'columns = ')
+    print(columns)
     if dtype is not None:
         if not is_dtype_equal(values.dtype, dtype):
             try:
@@ -156,14 +167,20 @@ def init_ndarray(values, index, columns, dtype=None, copy=False):
                 raise_with_traceback(e)
 
     index, columns = _get_axes(*values.shape, index=index, columns=columns)
-    values = values.T
+    print('After: index =' + str(index) + 'columns = ')
+    print(columns)
 
+    values = values.T
+    print('Values = ')
+    print(values)
     # if we don't have a dtype specified, then try to convert objects
     # on the entire block; this is to convert if we have datetimelike's
     # embedded in an object type
     if dtype is None and is_object_dtype(values):
         values = maybe_infer_to_datetimelike(values)
 
+    print('Values, Columns, Index')
+    print(values, columns, index)
     return create_block_manager_from_blocks([values], [columns, index])
 
 

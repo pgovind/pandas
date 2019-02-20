@@ -95,9 +95,13 @@ class BlockManager(PandasObject):
                  '_is_consolidated', '_blknos', '_blklocs']
 
     def __init__(self, blocks, axes, do_integrity_check=True):
+        print('Constructing a BlockManager')
+        print('blocks, axes')
+        print(blocks, axes)
         self.axes = [ensure_index(ax) for ax in axes]
         self.blocks = tuple(blocks)
-
+        print('self.axes, self.blocks, self.shape')
+        print(self.axes, self.blocks, self.shape)
         for block in blocks:
             if block.is_sparse:
                 if len(block.mgr_locs) != 1:
@@ -187,6 +191,8 @@ class BlockManager(PandasObject):
         """
         Update mgr._blknos / mgr._blklocs.
         """
+        print('self.shape[0]')
+        print(self.shape[0])
         new_blknos = np.empty(self.shape[0], dtype=np.int64)
         new_blklocs = np.empty(self.shape[0], dtype=np.int64)
         new_blknos.fill(-1)
@@ -194,6 +200,8 @@ class BlockManager(PandasObject):
 
         for blkno, blk in enumerate(self.blocks):
             rl = blk.mgr_locs
+            print('rl, rl.indexer ')
+            print(rl, rl.indexer)
             new_blknos[rl.indexer] = blkno
             new_blklocs[rl.indexer] = np.arange(len(rl))
 
@@ -202,6 +210,8 @@ class BlockManager(PandasObject):
 
         self._blknos = new_blknos
         self._blklocs = new_blklocs
+        print('self._blknos, self._blklocs')
+        print(self._blknos, self._blklocs)
 
     @property
     def items(self):
@@ -1140,6 +1150,8 @@ class BlockManager(PandasObject):
             If False, trying to insert non-unique item will raise
 
         """
+        print('Calling BlockManager::insert with loc, item, value')
+        print(loc, item, value)
         if not allow_duplicates and item in self.items:
             # Should this be a different kind of error??
             raise ValueError('cannot insert {}, already exists'.format(item))
@@ -1148,11 +1160,15 @@ class BlockManager(PandasObject):
             raise TypeError("loc must be int")
 
         # insert to the axis; this could possibly raise a TypeError
+        print('What does self.items look like here?')
+        print(self.items)
         new_axis = self.items.insert(loc, item)
-
+        print('new_axis')
+        print(new_axis)
         block = make_block(values=value, ndim=self.ndim,
                            placement=slice(loc, loc + 1))
-
+        print('block')
+        print(block)
         for blkno, count in _fast_count_smallints(self._blknos[loc:]):
             blk = self.blocks[blkno]
             if count == len(blk.mgr_locs):
@@ -1657,7 +1673,8 @@ def create_block_manager_from_blocks(blocks, axes):
 
 
 def create_block_manager_from_arrays(arrays, names, axes):
-
+    print('Calling create_block_manager_from_arrays with arrays, names, axes')
+    print(arrays, names, axes)
     try:
         blocks = form_blocks(arrays, names, axes)
         mgr = BlockManager(blocks, axes)
@@ -1690,6 +1707,9 @@ def construction_error(tot_items, block_shape, axes, e=None):
 # -----------------------------------------------------------------------
 
 def form_blocks(arrays, names, axes):
+    print('Calling form_blocks with arrays, names, axes')
+    print(arrays, names, axes)
+
     # put "leftover" items in float bucket, where else?
     # generalize?
     items_dict = defaultdict(list)
@@ -1701,7 +1721,8 @@ def form_blocks(arrays, names, axes):
     else:
         assert names_idx.intersection(axes[0]).is_unique
         names_indexer = names_idx.get_indexer_for(axes[0])
-
+    print('form_blocks::names_indexer')
+    print(names_indexer)
     for i, name_idx in enumerate(names_indexer):
         if name_idx == -1:
             extra_locs.append(i)
@@ -1712,7 +1733,8 @@ def form_blocks(arrays, names, axes):
 
         block_type = get_block_type(v)
         items_dict[block_type.__name__].append((i, k, v))
-
+    print('items_dict')
+    print(items_dict)
     blocks = []
     if len(items_dict['FloatBlock']):
         float_blocks = _multi_blockify(items_dict['FloatBlock'])

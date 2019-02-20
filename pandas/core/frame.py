@@ -377,6 +377,7 @@ class DataFrame(NDFrame):
 
     def __init__(self, data=None, index=None, columns=None, dtype=None,
                  copy=False):
+        print('Constructing a dataframe')
         if data is None:
             data = {}
         if dtype is not None:
@@ -389,6 +390,7 @@ class DataFrame(NDFrame):
             mgr = self._init_mgr(data, axes=dict(index=index, columns=columns),
                                  dtype=dtype, copy=copy)
         elif isinstance(data, dict):
+            print('data is a dictionary')
             mgr = init_dict(data, index, columns, dtype=dtype)
         elif isinstance(data, ma.MaskedArray):
             import numpy.ma.mrecords as mrecords
@@ -411,21 +413,27 @@ class DataFrame(NDFrame):
 
         elif isinstance(data, (np.ndarray, Series, Index)):
             if data.dtype.names:
+                print('data.dtype.names' + data)
                 data_columns = list(data.dtype.names)
                 data = {k: data[k] for k in data_columns}
                 if columns is None:
                     columns = data_columns
                 mgr = init_dict(data, index, columns, dtype=dtype)
             elif getattr(data, 'name', None) is not None:
+                print('getattr data ' + data)
                 mgr = init_dict({data.name: data}, index, columns,
                                 dtype=dtype)
             else:
+                print('init_ndarray')
                 mgr = init_ndarray(data, index, columns, dtype=dtype,
                                    copy=copy)
+                print('Finished constructing a mgr')
+                print(mgr)
 
         # For data is list-like, or Iterable (will consume into list)
         elif (isinstance(data, compat.Iterable)
               and not isinstance(data, string_and_binary_types)):
+            print('data is list like')
             if not isinstance(data, compat.Sequence):
                 data = list(data)
             if len(data) > 0:
@@ -444,6 +452,7 @@ class DataFrame(NDFrame):
                         else:
                             index = ibase.default_index(len(data))
 
+                    print('Calling arrays_to_mgr with ' + arrays)
                     mgr = arrays_to_mgr(arrays, columns, index, columns,
                                         dtype=dtype)
                 else:
@@ -3432,6 +3441,8 @@ class DataFrame(NDFrame):
         """
         self._ensure_valid_index(value)
         value = self._sanitize_column(column, value, broadcast=False)
+        print('Value after insert')
+        print(value)
         self._data.insert(loc, column, value,
                           allow_duplicates=allow_duplicates)
 
@@ -3544,7 +3555,7 @@ class DataFrame(NDFrame):
         -------
         numpy.ndarray
         """
-
+        print('_sanitize_column')
         def reindexer(value):
             # reindex if necessary
 
@@ -3567,6 +3578,7 @@ class DataFrame(NDFrame):
             return value
 
         if isinstance(value, Series):
+            print('_sanitize_column: Series')
             value = reindexer(value)
 
         elif isinstance(value, DataFrame):
@@ -3588,12 +3600,18 @@ class DataFrame(NDFrame):
             value = sanitize_index(value, self.index, copy=False)
 
         elif isinstance(value, Index) or is_sequence(value):
-
+            print('_sanitize_column: issequence')
             # turn me into an ndarray
             value = sanitize_index(value, self.index, copy=False)
             if not isinstance(value, (np.ndarray, Index)):
+                print('I am not an (ndarray, Index)')
                 if isinstance(value, list) and len(value) > 0:
+                    print('I am a list')
+                    print('Before convert platform')
+                    print(value)
                     value = maybe_convert_platform(value)
+                    print('After convert')
+                    print(value)
                 else:
                     value = com.asarray_tuplesafe(value)
             elif value.ndim == 2:
@@ -3601,6 +3619,7 @@ class DataFrame(NDFrame):
             elif isinstance(value, Index):
                 value = value.copy(deep=True)
             else:
+                print('I"m getting copied')
                 value = value.copy()
 
             # possibly infer to datetimelike
